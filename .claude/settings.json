@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bats --version)",
+      "Bash(bats tests/unit/user_config_tests.bats tests/integration/repo_switch_tests.bats tests/regression/edge_cases.bats)",
+      "Bash(command -v git)",
+      "Bash(command -v bash)",
+      "Bash(command -v env)",
+      "Read(//usr/bin/**)"
+    ]
+  }
+}
