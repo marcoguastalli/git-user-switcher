@@ -1,0 +1,151 @@
+- GIT USER SWITCHET SCRIPT
+	- Context/Role
+		- I need an bash script that allow me to easy set in a folder the following commands I run manually:
+			- for github user marcogvorwerk
+				- git config --local user.name "marcogvorwerk"
+				- git config --local user.email "marcogvorwerk"
+			- for github user marcoguastalli
+				- git config --local user.name "marcoguastalli"
+				- git config --local user.email "marcoguastalli"
+		- The script manages local git repository configuration only
+			- if there is a global configuration the script does not change it
+		- Keep in mind I use "gh" command and the script handle gh auth login automatically.
+	- Task
+		- write the script
+			- name it githubuserswitcher.sh
+			- the two for "marcogvorwerk" and "marcoguastalli" configs are hardcoded in the script, e.g.:
+				- USER_NAMES=(marcogvorwerk marcoguastalli)
+				- USER_EMAILS=(marcogvorwerk marcoguastalli)
+		- write tests
+			- unitary tests
+			- integrations test
+			- regression tests
+			- use BATS as the test framework with fixtures in tests/fixtures/
+		- run tests
+	- Specifications
+		- Explicit exit codes
+			- 0 = success
+			- 1 = user selection invalid / cancelled
+			- 2 = error / runtime error
+		- use cases
+			- I enter in a folder that is a non-git folder
+				- exit 0 with message: "This folder is not a git repository."
+			- I enter in a folder that is a git folder and there is no configuration
+				- I run githubuserswitcher.sh
+					- without parameters
+					- I get as response
+						- In the folder $pwd there are no git configuration, message:
+						- "No git user configuration found in this repository. Add one? (y/n)"
+							- yes
+								- select the user
+									- the options configured/hardcoded in the bash scipt itself are proposed
+									- render a bash select with:
+										- select 1 for "marcogvorwerk"
+										- select 2 for "marcoguastalli"
+										- select 3 to cancel
+								- the script run the corresponding command
+									- for example if I select 1 it runs:
+										- git config --local user.name "marcogvorwerk"
+										- git config --local user.email "marcogvorwerk"
+								- gh auth login
+								- exit 0 with a message:
+								- then run
+									- gh auth status
+								- messagge:
+									- "New git configuration:"
+									- "user.name  = marcogvorwerk"
+									- "user.email  = marcogvorwerk"
+							- no
+								- exit 0 with a message: "Cheers"
+			- I enter in a folder that is a git folder and there is already a configuration
+				- I run githubuserswitcher.sh
+					- without parameters
+					- I get as response
+						- In the folder $pwd the git user.name is $user.name with email $user.email, message:
+							- run
+								- gh auth status
+							- messagge:
+								- "Current git configuration:"
+								- "user.name  = marcogvorwerk"
+								- "user.email  = marcogvorwerk"
+								- "Change it? (y/n)"
+									- no
+										- exit 0 with a message "Cheers"
+									- yes
+										- select the user
+											- the options configured/hardcoded in the bash scipt itself are proposed
+											- render a bash select with:
+												- select 1 for "marcogvorwerk"
+												- select 2 for  "marcoguastalli"
+												- select 3 to cancel
+										- the script run the corresponding command
+											- for example if I select 1 it runs:
+												- git config --local user.name "marcogvorwerk"
+												- git config --local user.email "marcogvorwerk"
+										- run
+											- gh auth login
+										- exit 0 with a message:
+											- "Git user switched to:""
+											- "user.name  = marcogvorwerk"
+											- "user.email  = marcogvorwerk"
+		- There is immediate switch like
+			- githubuserswitcher.sh marcogvorwerk
+			- githubuserswitcher.sh marcoguastalli
+				- this will react as previous use cases
+		- Safety Rules
+			- set -euo pipefail
+			- check dependencies
+				- git
+				- gh
+					- exit 2 with a message: "git/gh not installed"
+		- The user list must be generated dynamically from the configuration structure
+		- BATS structure:
+			- project/
+			 ├ githubuserswitcher.sh
+			 └ tests/
+			     ├ unit/
+			     │   └ user_config_tests.bats
+			     ├ integration/
+			     │   └ repo_switch_tests.bats
+			     ├ regression/
+			     │   └ edge_cases.bats
+			     └ fixtures/
+			         ├ repo_with_config/
+			         ├ repo_without_config/
+			         └ non_git_directory/
+		- Unit Tests
+			- Each test must run inside a temporary directory created with mktemp
+			- Test internal functions
+				- detect_git_repo
+				- read_git_config
+				- list_users
+				- apply_user_config
+			- Integration Tests
+				- git init
+				- run githubuserswitcher.sh
+					- git config --local user.name
+					- git config --local user.email
+				- verify git config
+			- Regression Tests
+				- invalid user index
+					- exit 1
+				- cancel selection
+					- exit 1
+				- missing git
+					- exit 2
+				- not git repo
+					- exit 0
+		- add dry-run mode
+			- githubuserswitcher.sh --dry-run
+		- add githubuserswitcher.sh --help
+		- no more git commands run
+	- Response Format
+		- just a message in the terminal
+			- always as verbose as possible
+		- for now do not generate any code
+		- I need to discuss first the solution with you
+		- I need to improve this prompt adding your precious suggestions
+	- Verification
+		- every time review your output in order to avoid errors, duplications, inconsistencies and unused parts
+		- once we will hace the tests, run them all, so when i will run them in my ide I will not have issues
+		
